@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Consumo de APIs</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background-color: #dcdcdc;
+    text-align: center;
+}
+
+h1{
+    margin-top: 20px;
+}
+
+button{
+    padding: 10px 15px;
+    margin: 10px;
+    border: none;
+    background-color: steelblue;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button:hover{
+    background-color: #2c6c9e;
+}
+
+table{
+    margin: 20px auto;
+    border-collapse: collapse;
+    width: 80%;
+    background-color: white;
+}
+
+th, td{
+    border: 1px solid #999;
+    padding: 8px;
+}
+
+th{
+    background-color: #2fa4dc;
+    color: white;
+}
+
+#error{
+    color: red;
+    font-weight: bold;
+}
+
+
+
+.card{
+    width: 750px;
+    margin: 40px auto;
+    background: linear-gradient(to right, #f7f7f7, #e6e6e6);
+    border-radius: 15px;
+    display: flex;
+    overflow: hidden;
+    border: 4px solid #2fa4dc;
+    box-shadow: 0 8px 0 #1c3f5e;
+}
+
+.left{
+    width: 30%;
+    background-color: #dcdcdc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.left img{
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background-color: white;
+    padding: 10px;
+}
+
+.right{
+    width: 70%;
+    padding: 20px;
+    text-align: left;
+}
+
+.right h2{
+    margin: 0;
+    font-size: 32px;
+}
+
+.right h4{
+    margin: 5px 0;
+    color: gray;
+}
+
+.bottom{
+    display: flex;
+    border-top: 1px solid #ccc;
+    padding-top: 15px;
+}
+
+.bottom div{
+    width: 50%;
+}
+</style>
+
+</head>
+<body>
+
+<h1>Consumo de APIs</h1>
+
+<button id="cargarBtn">Cargar Información</button>
+<button id="cardBtn">Generar Tarjeta</button>
+
+<p id="error"></p>
+
+<div id="tablas"></div>
+<div id="contenido"></div>
+
+<script>
+
+let datosUsuario = null;
+
+document.getElementById("cargarBtn").addEventListener("click", async () => {
+
+    document.getElementById("error").textContent = "";
+    document.getElementById("tablas").innerHTML = "";
+    document.getElementById("contenido").innerHTML = "";
+
+    try{
+
+       
+        const res = await fetch("https://jsonplaceholder.typicode.com/users");
+        const usuarios = await res.json();
+
+      
+        const indiceAleatorio = Math.floor(Math.random() * usuarios.length);
+        const usuario = usuarios[indiceAleatorio];
+
+      
+        const imagenURL = "https://api.dicebear.com/7.x/avataaars/svg?seed=" + usuario.username;
+
+        datosUsuario = {
+            nombre: usuario.name,
+            empresa: usuario.company.name,
+            email: usuario.email,
+            username: usuario.username,
+            ciudad: usuario.address.city,
+            telefono: usuario.phone,
+            web: usuario.website,
+            imagen: imagenURL
+        };
+
+        const contenedor = document.getElementById("tablas");
+
+      
+        const tabla1 = document.createElement("table");
+        tabla1.innerHTML = `
+            <tr>
+                <th colspan="2">API 1 - Datos Usuario</th>
+            </tr>
+            <tr><td>Nombre</td><td>${usuario.name}</td></tr>
+            <tr><td>Email</td><td>${usuario.email}</td></tr>
+            <tr><td>Username</td><td>${usuario.username}</td></tr>
+            <tr><td>Empresa</td><td>${usuario.company.name}</td></tr>
+            <tr><td>Ciudad</td><td>${usuario.address.city}</td></tr>
+            <tr><td>Teléfono</td><td>${usuario.phone}</td></tr>
+            <tr><td>Sitio Web</td><td>${usuario.website}</td></tr>
+        `;
+
+    
+        const tabla2 = document.createElement("table");
+        tabla2.innerHTML = `
+            <tr>
+                <th colspan="2">API 2 - Avatar</th>
+            </tr>
+            <tr>
+                <td>Imagen</td>
+                <td><img src="${imagenURL}" width="120"></td>
+            </tr>
+            <tr>
+                <td>Seed utilizada</td>
+                <td>${usuario.username}</td>
+            </tr>
+        `;
+
+        contenedor.appendChild(tabla1);
+        contenedor.appendChild(tabla2);
+
+        alert("Información cargada correctamente");
+
+    }catch(error){
+        document.getElementById("error").textContent = "Hubo un error al obtener los datos.";
+        console.error(error);
+    }
+
+});
+
+
+document.getElementById("cardBtn").addEventListener("click", () => {
+
+    if(datosUsuario == null){
+        document.getElementById("error").textContent = "Primero debes cargar la información.";
+        return;
+    }
+
+    const contenedor = document.getElementById("contenido");
+    contenedor.innerHTML = "";
+
+    const card = document.createElement("div");
+    card.classList.add("card");
+
+    const left = document.createElement("div");
+    left.classList.add("left");
+
+    const img = document.createElement("img");
+    img.src = datosUsuario.imagen;
+
+    left.appendChild(img);
+
+    const right = document.createElement("div");
+    right.classList.add("right");
+
+    right.innerHTML = `
+        <h2>${datosUsuario.nombre}</h2>
+        <h4>${datosUsuario.empresa}</h4>
+        <p>Usuario generado usando dos APIs externas.</p>
+        <div class="bottom">
+            <div>
+                <p><b>Email:</b> ${datosUsuario.email}</p>
+                <p><b>Username:</b> ${datosUsuario.username}</p>
+                <p><b>Teléfono:</b> ${datosUsuario.telefono}</p>
+            </div>
+            <div>
+                <p><b>Ciudad:</b> ${datosUsuario.ciudad}</p>
+                <p><b>Web:</b> ${datosUsuario.web}</p>
+            </div>
+        </div>
+    `;
+
+    card.appendChild(left);
+    card.appendChild(right);
+    contenedor.appendChild(card);
+
+});
+
+</script>
+
+</body>
+</html>
